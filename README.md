@@ -1,4 +1,4 @@
-# 1.0
+# AutoPrimer 1.0
 
 AutoPrimer is a clinician-friendly software programme for the design of PCR primers. It comprises the core program autoprimer.py and the graphical user interface autoprimer_gui.py
 
