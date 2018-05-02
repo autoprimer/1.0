@@ -17,8 +17,8 @@ import urllib.parse
 import urllib.request
 
 debug = False
-version = '1.0f build 20180213'
-message = 'Updated server status check and autoSNPfree'
+version = '1.0g build 20180502'
+message = 'Updated batch submission mode'
 
 def print_disclaimer():
     """Print disclaimer at exit"""
@@ -84,6 +84,7 @@ def autoSNPfree(pair_name, fp, rp, server, max_wait=1200, batch_mode=False):
     jobid_page = wget(base_url + query)
     jobid_found = re.search('jobid=([0-9a-f]{40})', jobid_page)
     if jobid_found:
+        print('# Online SNPfree job successfully created.', file=sys.stderr)
         jobid = jobid_found.group(1)
         if server == 'HKU':
             result_url = 'http://grass.cgs.hku.hk/SNPfree/view.php?jobid='
@@ -105,8 +106,6 @@ def autoSNPfree(pair_name, fp, rp, server, max_wait=1200, batch_mode=False):
                     waited += 5
             else:
                 ready = True
-
-        print('# Online SNPfree successfully performed.', file=sys.stderr)
         return result_page
 
 def sp_penalty(ratio, mism, gaps):
@@ -896,6 +895,16 @@ def main(args):
                             if len(primers) == 0:
                                 print('# No primers found after 3 levels of intelligent-retry. Proceeding to next exon...', file=sys.stderr)
                 primer_count = 1
+                #####
+                # Batch submission for improved performance of autoSNPfree
+                pair_name, fp, rp = [], [], []
+                for p in primers:
+                    pair_name.append(sequence_id + '_' + str(primer_count))
+                    fp.append(p[0])
+                    rp.append(p[1])
+                autoSNPfree(pair_name, fp, rp, default_server, batch_mode=True)
+                pair_name, fp, rp = None, None, None                
+                #####
                 for p in primers:
                     pair_name = sequence_id + '_' + str(primer_count)
                     fp = p[0]
